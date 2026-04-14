@@ -240,6 +240,13 @@ const Dashboard = () => {
           )}
         </section>
       </div>
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-border/40 py-6 mt-4">
+        <p className="text-center text-xs text-muted-foreground/50">
+          Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
+        </p>
+      </footer>
     </div>
   );
 };

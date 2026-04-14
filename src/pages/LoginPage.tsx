@@ -49,6 +49,10 @@ const LoginPage = () => {
         </Button>
 
         {error && <p className="text-destructive text-sm mt-4">{error}</p>}
+
+        <p className="mt-10 text-xs text-muted-foreground/50">
+          Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
+        </p>
       </div>
     </div>
   );
