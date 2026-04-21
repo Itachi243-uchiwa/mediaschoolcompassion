@@ -11,6 +11,8 @@ import Dashboard from "./pages/Dashboard";
 import CoursePage from "./pages/CoursePage";
 import ModuleDetail from "./pages/ModuleDetail";
 import VideoPlayer from "./pages/VideoPlayer";
+import DonationSuccess from "./pages/DonationSuccess";
+import DonationCancel from "./pages/DonationCancel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,11 +37,15 @@ const AppRoutes = () => {
       {/* Public login */}
       <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
 
-      {/* Public pages */}
+      {/* Protected pages */}
       <Route path="/dashboard" element={!user ? <Navigate to="/login" replace /> : <Dashboard />} />
       <Route path="/formation/:courseId" element={!user ? <Navigate to="/login" replace /> : <CoursePage />} />
       <Route path="/formation/:courseId/module/:moduleId" element={!user ? <Navigate to="/login" replace /> : <ModuleDetail />} />
       <Route path="/formation/:courseId/module/:moduleId/video/:videoId" element={!user ? <Navigate to="/login" replace /> : <VideoPlayer />} />
+
+      {/* Donation return pages — public (Mollie redirects here) */}
+      <Route path="/don/merci" element={<DonationSuccess />} />
+      <Route path="/don/annule" element={<DonationCancel />} />
 
       {/* Root */}
       <Route path="/" element={!user ? <Navigate to="/login" replace /> : isAdmin ? <Navigate to="/admin" replace /> : <Navigate to="/dashboard" replace />} />

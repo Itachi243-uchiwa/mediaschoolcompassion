@@ -4,7 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getCourses, getModules, getVideos, getUserProgress, Course } from "@/lib/firestore";
 import { Button } from "@/components/ui/button";
 import ProgressBar from "@/components/ProgressBar";
-import { Play, LogOut, BookOpen, ChevronRight, Trophy, Flame } from "lucide-react";
+import DonationButton from "@/components/DonationButton";
+import { Play, LogOut, BookOpen, ChevronRight, Trophy, Flame, Heart, Globe, Sparkles } from "lucide-react";
 
 interface CourseWithProgress extends Course {
   totalVideos: number;
@@ -78,6 +79,14 @@ const Dashboard = () => {
             <span className="font-bold text-foreground tracking-tight">Media School</span>
           </div>
           <div className="flex items-center gap-3">
+            {/* Donation button in navbar */}
+            <DonationButton
+              size="sm"
+              variant="outline"
+              label="Soutenir"
+              className="hidden sm:flex border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+              context="Rejoignez la communauté qui finance la diffusion des ressources chrétiennes dans 50+ langues."
+            />
             {userPhoto && (
               <img src={userPhoto} alt={userName} className="w-8 h-8 rounded-full ring-2 ring-border" />
             )}
@@ -168,6 +177,31 @@ const Dashboard = () => {
           </section>
         )}
 
+        {/* ── Bannière de don ── */}
+        <section className="rounded-2xl overflow-hidden border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-card relative">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4" />
+          <div className="relative p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+              <Heart className="h-6 w-6 text-primary" fill="currentColor" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-bold text-foreground mb-1">Soutenir la mission ImpactX</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
+                Ce contenu est gratuit grâce à des partenaires comme vous. Chaque don finance la traduction et la diffusion de ressources chrétiennes dans <span className="font-semibold text-foreground">50+ langues</span> à travers le monde.
+              </p>
+              <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-primary" /> +50 000 vies impactées</span>
+                <span className="flex items-center gap-1"><Sparkles className="h-3 w-3 text-primary" /> 1 500+ partenaires actifs</span>
+              </div>
+            </div>
+            <DonationButton
+              label="Devenir partenaire"
+              className="flex-shrink-0 shadow-lg shadow-primary/20"
+              context="Rejoignez les 1500+ partenaires qui financent la diffusion des ressources chrétiennes dans 50+ langues."
+            />
+          </div>
+        </section>
+
         {/* ── Formations ── */}
         <section>
           <div className="flex items-center justify-between mb-6">
@@ -242,10 +276,19 @@ const Dashboard = () => {
       </div>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-border/40 py-6 mt-4">
-        <p className="text-center text-xs text-muted-foreground/50">
-          Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
-        </p>
+      <footer className="border-t border-border/40 py-8 mt-4">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground/50">
+            Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
+          </p>
+          <DonationButton
+            variant="ghost"
+            size="sm"
+            label="Soutenir le projet"
+            className="text-muted-foreground hover:text-primary"
+            showIcon={true}
+          />
+        </div>
       </footer>
     </div>
   );

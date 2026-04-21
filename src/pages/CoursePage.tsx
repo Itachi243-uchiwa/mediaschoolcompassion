@@ -3,8 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCourse, getModules, getVideos, getUserProgress, setVideoProgress, Module, Video } from "@/lib/firestore";
 import ProgressBar from "@/components/ProgressBar";
+import DonationButton from "@/components/DonationButton";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Play, CheckCircle2, Circle, ChevronDown, ChevronUp, Image, Lock } from "lucide-react";
+import { ArrowLeft, Play, CheckCircle2, Circle, ChevronDown, ChevronUp, Lock, Heart } from "lucide-react";
 
 interface VideoWithProgress extends Video {
   completed: boolean;
@@ -91,10 +92,10 @@ const CoursePage = () => {
     );
   }
 
-  const allVideos = modules.flatMap((m) => m.videos);
   const totalWatched = Object.values(progress).filter(Boolean).length;
   const totalVideos = modules.reduce((s, m) => s + (m.loaded ? m.videos.length : 0), 0);
   const globalPercent = totalVideos > 0 ? Math.round((totalWatched / totalVideos) * 100) : 0;
+  const courseCompleted = totalVideos > 0 && totalWatched >= totalVideos;
 
   return (
     <div className="min-h-screen bg-background">
@@ -112,6 +113,15 @@ const CoursePage = () => {
             </div>
             {totalVideos > 0 && <ProgressBar value={globalPercent} size="sm" />}
           </div>
+          {/* Donation button in header */}
+          <DonationButton
+            variant="outline"
+            size="sm"
+            label="Don"
+            showIcon={true}
+            className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/10 flex-shrink-0"
+            context={`Vous appréciez la formation "${courseTitle}" ? Aidez-nous à produire plus de contenu de qualité.`}
+          />
         </div>
       </div>
 
@@ -132,7 +142,7 @@ const CoursePage = () => {
       </div>
 
       {/* ── Modules accordion ── */}
-      <div className="max-w-4xl mx-auto px-4 pb-16 space-y-3">
+      <div className="max-w-4xl mx-auto px-4 pb-10 space-y-3">
         {modules.map((mod, i) => {
           const isOpen = expandedIds.has(mod.id);
           const modWatched = mod.videos.filter((v) => v.completed).length;
@@ -243,11 +253,50 @@ const CoursePage = () => {
         })}
       </div>
 
+      {/* ── Donation section — after modules ── */}
+      <div className="max-w-4xl mx-auto px-4 pb-16">
+        <div className={`rounded-2xl border p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5 transition-all ${
+          courseCompleted
+            ? "border-primary/40 bg-gradient-to-br from-primary/12 via-primary/6 to-card shadow-lg shadow-primary/10"
+            : "border-border/60 bg-card"
+        }`}>
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${courseCompleted ? "bg-primary/20" : "bg-secondary"}`}>
+            <Heart className={`h-6 w-6 ${courseCompleted ? "text-primary" : "text-muted-foreground"}`} fill={courseCompleted ? "currentColor" : "none"} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-foreground">
+              {courseCompleted
+                ? "🎉 Formation terminée — merci pour votre engagement !"
+                : "Ce contenu est 100% gratuit"}
+            </p>
+            <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
+              {courseCompleted
+                ? "Votre soutien nous permettrait de créer encore plus de formations de qualité."
+                : "Un don, même symbolique, aide à financer la production et la traduction de ces ressources dans 50+ langues."}
+            </p>
+          </div>
+          <DonationButton
+            size="sm"
+            label={courseCompleted ? "Soutenir le projet" : "Faire un don"}
+            className="flex-shrink-0 shadow-md shadow-primary/15"
+            context={`Vous appréciez la formation "${courseTitle}" ? Aidez-nous à produire plus de contenu gratuit de qualité.`}
+          />
+        </div>
+      </div>
+
       {/* ── Footer ── */}
       <footer className="border-t border-border/40 py-6 mt-4">
-        <p className="text-center text-xs text-muted-foreground/50">
-          Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
-        </p>
+        <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground/50">
+            Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
+          </p>
+          <DonationButton
+            variant="ghost"
+            size="sm"
+            label="Soutenir le projet"
+            className="text-muted-foreground hover:text-primary"
+          />
+        </div>
       </footer>
     </div>
   );

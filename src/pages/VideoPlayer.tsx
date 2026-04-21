@@ -3,7 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getVideo, getUserProgress, setVideoProgress, Video } from "@/lib/firestore";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle2, Circle, Play, Clock } from "lucide-react";
+import DonationButton from "@/components/DonationButton";
+import { ArrowLeft, CheckCircle2, Circle, Play, Clock, Heart } from "lucide-react";
 
 const VideoPlayer = () => {
   const { courseId, moduleId, videoId } = useParams();
@@ -72,6 +73,17 @@ const VideoPlayer = () => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <p className="text-sm font-medium text-foreground truncate flex-1">{video.title}</p>
+
+          {/* Donation button in top bar */}
+          <DonationButton
+            variant="outline"
+            size="sm"
+            label="Don"
+            showIcon={true}
+            className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/10 flex-shrink-0"
+            context={`Ce contenu vous a plu ? Soutenez la production de ressources comme "${video.title}".`}
+          />
+
           <button
             onClick={handleToggle}
             title={watched ? "Marquer comme non vue" : "Marquer comme vue"}
@@ -180,13 +192,40 @@ const VideoPlayer = () => {
             <p className="text-muted-foreground leading-relaxed">{video.description}</p>
           )}
         </div>
+
+        {/* ── Donation nudge — contextual after video info ── */}
+        <div className="mt-6 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/8 via-primary/4 to-card p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+            <Heart className="h-5 w-5 text-primary" fill="currentColor" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground">Ce contenu t'a apporté quelque chose ?</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Aide-nous à produire et diffuser plus de ressources comme celle-ci dans 50+ langues.
+            </p>
+          </div>
+          <DonationButton
+            size="sm"
+            label="Soutenir"
+            className="flex-shrink-0 shadow-md shadow-primary/15"
+            context={`Ce contenu vous a plu ? Soutenez la production de ressources comme "${video.title}".`}
+          />
+        </div>
       </div>
 
       {/* ── Footer ── */}
       <footer className="border-t border-border/40 py-6 mt-4">
-        <p className="text-center text-xs text-muted-foreground/50">
-          Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
-        </p>
+        <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground/50">
+            Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
+          </p>
+          <DonationButton
+            variant="ghost"
+            size="sm"
+            label="Faire un don"
+            className="text-muted-foreground hover:text-primary"
+          />
+        </div>
       </footer>
     </div>
   );
