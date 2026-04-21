@@ -272,7 +272,7 @@ const CoursePage = () => {
             <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
               {courseCompleted
                 ? "Votre soutien nous permettrait de créer encore plus de formations de qualité."
-                : "Un don, même symbolique, aide à financer la production et la traduction de ces ressources dans 50+ langues."}
+                : "Un don, même symbolique, aide à financer la production de nouvelles formations et à maintenir la plateforme gratuite."}
             </p>
           </div>
           <DonationButton

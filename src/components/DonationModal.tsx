@@ -13,10 +13,10 @@ interface DonationModalProps {
 const PRESET_AMOUNTS = [5, 10, 20, 50];
 
 const IMPACT_MESSAGES: Record<number, string> = {
-  5: "finance la traduction d'un chapitre dans une nouvelle langue",
-  10: "permet de sous-titrer une vidéo complète",
-  20: "aide à produire un nouvel épisode de podcast",
-  50: "soutient la diffusion du contenu dans 5 pays supplémentaires",
+  5: "contribue à couvrir les frais d'hébergement de la plateforme",
+  10: "aide à maintenir l'accès gratuit aux formations pour tous",
+  20: "permet de produire et publier de nouvelles vidéos de formation",
+  50: "finance le développement de nouvelles fonctionnalités pour les apprenants",
 };
 
 function getImpactMessage(amount: number): string {
@@ -108,30 +108,18 @@ export default function DonationModal({ open, onClose, context }: DonationModalP
             <Heart className="h-7 w-7 text-primary" fill="currentColor" />
           </div>
 
-          <h2 className="text-xl font-bold text-foreground mb-1">Soutenir le projet</h2>
+          <h2 className="text-xl font-bold text-foreground mb-1">Soutenir Media School Compassion</h2>
           {context ? (
             <p className="text-sm text-muted-foreground">{context}</p>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Chaque don aide à toucher des milliers de vies à travers le monde
+              Votre don aide à maintenir l'accès gratuit aux formations pour tous
             </p>
           )}
         </div>
 
         {/* Body */}
         <div className="px-6 pb-6 space-y-5">
-
-          {/* Stats strip */}
-          <div className="grid grid-cols-2 gap-3 -mt-1">
-            <div className="rounded-xl bg-secondary/50 px-3 py-2.5 text-center">
-              <p className="text-base font-bold text-primary">+50K</p>
-              <p className="text-xs text-muted-foreground">vies impactées</p>
-            </div>
-            <div className="rounded-xl bg-secondary/50 px-3 py-2.5 text-center">
-              <p className="text-base font-bold text-primary">50+</p>
-              <p className="text-xs text-muted-foreground">langues</p>
-            </div>
-          </div>
 
           {/* Amount presets */}
           <div>

@@ -5,7 +5,7 @@ import { getCourses, getModules, getVideos, getUserProgress, Course } from "@/li
 import { Button } from "@/components/ui/button";
 import ProgressBar from "@/components/ProgressBar";
 import DonationButton from "@/components/DonationButton";
-import { Play, LogOut, BookOpen, ChevronRight, Trophy, Flame, Heart, Globe, Sparkles } from "lucide-react";
+import { Play, LogOut, BookOpen, ChevronRight, Trophy, Flame, Heart } from "lucide-react";
 
 interface CourseWithProgress extends Course {
   totalVideos: number;
@@ -85,7 +85,7 @@ const Dashboard = () => {
               variant="outline"
               label="Soutenir"
               className="hidden sm:flex border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
-              context="Rejoignez la communauté qui finance la diffusion des ressources chrétiennes dans 50+ langues."
+              context="Votre don aide à maintenir les formations de Media School Compassion accessibles gratuitement."
             />
             {userPhoto && (
               <img src={userPhoto} alt={userName} className="w-8 h-8 rounded-full ring-2 ring-border" />
@@ -185,19 +185,15 @@ const Dashboard = () => {
               <Heart className="h-6 w-6 text-primary" fill="currentColor" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold text-foreground mb-1">Soutenir la mission ImpactX</h3>
+              <h3 className="text-lg font-bold text-foreground mb-1">Soutenir Media School Compassion</h3>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
-                Ce contenu est gratuit grâce à des partenaires comme vous. Chaque don finance la traduction et la diffusion de ressources chrétiennes dans <span className="font-semibold text-foreground">50+ langues</span> à travers le monde.
+                Ce contenu est gratuit grâce à des donateurs comme vous. Chaque contribution aide à maintenir et développer les formations disponibles sur cette plateforme.
               </p>
-              <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-primary" /> +50 000 vies impactées</span>
-                <span className="flex items-center gap-1"><Sparkles className="h-3 w-3 text-primary" /> 1 500+ partenaires actifs</span>
-              </div>
             </div>
             <DonationButton
-              label="Devenir partenaire"
+              label="Faire un don"
               className="flex-shrink-0 shadow-lg shadow-primary/20"
-              context="Rejoignez les 1500+ partenaires qui financent la diffusion des ressources chrétiennes dans 50+ langues."
+              context="Aidez-nous à maintenir et développer les formations de Media School Compassion."
             />
           </div>
         </section>

@@ -201,7 +201,7 @@ const VideoPlayer = () => {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground">Ce contenu t'a apporté quelque chose ?</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Aide-nous à produire et diffuser plus de ressources comme celle-ci dans 50+ langues.
+              Aide-nous à produire plus de formations et à maintenir l'accès gratuit pour tous.
             </p>
           </div>
           <DonationButton

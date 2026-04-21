@@ -29,7 +29,7 @@ const DonationSuccess = () => {
             Merci pour votre don ! 🙏
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Votre générosité contribue directement à la transformation de milliers de vies à travers le monde.
+            Votre soutien contribue directement à maintenir les formations de Media School Compassion accessibles à tous, gratuitement.
           </p>
         </div>
 
@@ -38,9 +38,9 @@ const DonationSuccess = () => {
           <p className="text-sm font-semibold text-foreground mb-3">Grâce à votre soutien :</p>
           <div className="space-y-3">
             {[
-              { icon: Globe, text: "Des ressources chrétiennes traduites en 50+ langues" },
-              { icon: Heart, text: "Des vies transformées par la Parole dans des régions difficiles d'accès" },
-              { icon: CheckCircle2, text: "Du contenu de qualité produit et diffusé gratuitement" },
+              { icon: Globe, text: "Les formations restent gratuites et accessibles à tous" },
+              { icon: Heart, text: "De nouveaux contenus peuvent être produits et publiés" },
+              { icon: CheckCircle2, text: "La plateforme continue à évoluer pour les apprenants" },
             ].map(({ icon: Icon, text }, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -60,14 +60,6 @@ const DonationSuccess = () => {
           >
             Continuer à apprendre
             <ArrowRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 gap-2 h-11"
-            onClick={() => window.open("https://impactxapp.com", "_blank")}
-          >
-            <Globe className="h-4 w-4" />
-            Découvrir ImpactX
           </Button>
         </div>
 
