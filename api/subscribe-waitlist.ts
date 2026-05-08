@@ -9,16 +9,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const gmailUser = process.env.GMAIL_USER;
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
+
   if (!gmailUser || !gmailPass) {
-    return res.status(500).json({ error: "Configuration email manquante (GMAIL_USER / GMAIL_APP_PASSWORD)" });
+    return res.status(500).json({
+      error: `Variables manquantes sur Vercel — GMAIL_USER: ${gmailUser ? "✓" : "ABSENT"}, GMAIL_APP_PASSWORD: ${gmailPass ? "✓" : "ABSENT"}`,
+    });
   }
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: { user: gmailUser, pass: gmailPass },
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 8000,
+    socketTimeout: 8000,
   });
+
+  // Vérification de la connexion SMTP avant envoi
+  try {
+    await transporter.verify();
+  } catch (err) {
+    console.error("SMTP verify failed:", err);
+    return res.status(500).json({
+      error: `Connexion Gmail échouée : ${(err as Error).message}. Vérifiez GMAIL_USER et GMAIL_APP_PASSWORD.`,
+    });
+  }
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -63,15 +79,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 </html>`;
 
   try {
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `"Média School Compassion" <${gmailUser}>`,
       to: email,
       subject: `✅ Inscription confirmée — ${courseTitle}`,
       html,
     });
-    return res.status(200).json({ ok: true });
+    console.log("Email sent:", info.messageId, "→", email);
+    return res.status(200).json({ ok: true, messageId: info.messageId });
   } catch (err) {
-    console.error("Gmail SMTP error:", err);
-    return res.status(500).json({ error: "Erreur d'envoi : " + (err as Error).message });
+    console.error("sendMail error:", err);
+    return res.status(500).json({ error: `Envoi échoué : ${(err as Error).message}` });
   }
 }
