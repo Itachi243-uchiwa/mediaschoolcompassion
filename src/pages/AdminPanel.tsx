@@ -48,13 +48,24 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 const CoursesList = () => {
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [waitlistCounts, setWaitlistCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Course | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Course | null>(null);
   const [form, setForm] = useState({ title: "", description: "", image_url: "", sort_order: "0" });
 
-  const load = async () => { setCourses(await getCourses()); setLoading(false); };
+  const load = async () => {
+    const coursesData = await getCourses();
+    setCourses(coursesData);
+    const counts: Record<string, number> = {};
+    await Promise.all(coursesData.map(async (c) => {
+      const wl = await getWaitlistForCourse(c.id);
+      counts[c.id] = wl.length;
+    }));
+    setWaitlistCounts(counts);
+    setLoading(false);
+  };
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setEditing(null); setForm({ title: "", description: "", image_url: "", sort_order: String(courses.length) }); setShowForm(true); };
@@ -88,7 +99,15 @@ const CoursesList = () => {
             </div>
             <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/admin/courses/${course.id}`)}>
               <h3 className="font-semibold text-foreground hover:text-primary transition-colors">{course.title}</h3>
-              <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{course.description}</p>
+              <div className="flex items-center gap-3 mt-0.5">
+                <p className="text-sm text-muted-foreground line-clamp-1">{course.description}</p>
+                {(waitlistCounts[course.id] ?? 0) > 0 && (
+                  <span className="flex-shrink-0 flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                    <Users className="h-3 w-3" />
+                    {waitlistCounts[course.id]} abonné{waitlistCounts[course.id] > 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button variant="ghost" size="icon" title="Modules" onClick={() => navigate(`/admin/courses/${course.id}`)}><Layers className="h-4 w-4" /></Button>
@@ -192,34 +211,48 @@ const CourseModules = () => {
         <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />Nouveau module</Button>
       </div>
 
-      {/* Bandeau waitlist */}
-      {(waitlist.length > 0 || notified) && (
-        <div className={`mb-6 rounded-xl border p-4 flex items-center justify-between gap-4 ${notified ? "border-green-500/30 bg-green-500/5" : "border-primary/30 bg-primary/5"}`}>
-          <div className="flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${notified ? "bg-green-500/15" : "bg-primary/15"}`}>
-              {notified ? <Bell className="h-4 w-4 text-green-500" /> : <Users className="h-4 w-4 text-primary" />}
-            </div>
-            <div>
-              <p className="font-semibold text-foreground text-sm">
-                {notified ? "Abonnés notifiés !" : `${waitlist.length} abonné${waitlist.length > 1 ? "s" : ""} en attente`}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {notified
-                  ? "Les emails ont été envoyés avec succès."
-                  : modules.length > 0
-                  ? "Des utilisateurs veulent être avertis. Cliquez pour envoyer les emails."
-                  : "Ajoutez des modules pour pouvoir notifier les abonnés."}
-              </p>
-            </div>
+      {/* Bandeau waitlist — toujours visible */}
+      <div className={`mb-6 rounded-xl border p-4 flex items-center justify-between gap-4 ${
+        notified ? "border-green-500/30 bg-green-500/5"
+        : waitlist.length > 0 ? "border-primary/30 bg-primary/5"
+        : "border-border bg-card"
+      }`}>
+        <div className="flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+            notified ? "bg-green-500/15" : waitlist.length > 0 ? "bg-primary/15" : "bg-secondary"
+          }`}>
+            {notified
+              ? <Bell className="h-4 w-4 text-green-500" />
+              : <Users className={`h-4 w-4 ${waitlist.length > 0 ? "text-primary" : "text-muted-foreground"}`} />}
           </div>
-          {!notified && modules.length > 0 && (
-            <Button size="sm" className="gap-2 flex-shrink-0" onClick={handleNotifyWaitlist} disabled={notifying}>
-              {notifying ? <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" /> : <Bell className="h-4 w-4" />}
-              Notifier les abonnés
-            </Button>
-          )}
+          <div>
+            <p className="font-semibold text-foreground text-sm">
+              {notified
+                ? "Abonnés notifiés !"
+                : waitlist.length === 0
+                ? "Aucun abonné en attente"
+                : `${waitlist.length} abonné${waitlist.length > 1 ? "s" : ""} en attente`}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {notified
+                ? "Les emails ont été envoyés avec succès."
+                : waitlist.length === 0
+                ? "Personne n'a encore demandé à être averti pour cette formation."
+                : modules.length > 0
+                ? "Cliquez sur le bouton pour envoyer les emails de notification."
+                : "Ajoutez des modules d'abord pour pouvoir notifier les abonnés."}
+            </p>
+          </div>
         </div>
-      )}
+        {!notified && waitlist.length > 0 && modules.length > 0 && (
+          <Button size="sm" className="gap-2 flex-shrink-0" onClick={handleNotifyWaitlist} disabled={notifying}>
+            {notifying
+              ? <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+              : <Bell className="h-4 w-4" />}
+            Notifier les abonnés
+          </Button>
+        )}
+      </div>
       <div className="space-y-4">
         {modules.map((mod, i) => (
           <div key={mod.id} className="flex items-center gap-4 p-5 rounded-xl border border-border bg-card">

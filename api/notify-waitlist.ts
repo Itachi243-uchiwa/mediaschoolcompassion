@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -14,11 +14,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: "Données manquantes" });
   }
 
-  const resendKey = process.env.RESEND_API_KEY;
-  if (!resendKey) return res.status(500).json({ error: "Configuration email manquante (RESEND_API_KEY)" });
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  if (!gmailUser || !gmailPass) {
+    return res.status(500).json({ error: "Configuration email manquante (GMAIL_USER / GMAIL_APP_PASSWORD)" });
+  }
 
-  const from = process.env.RESEND_FROM_EMAIL || "Compassion Média School <onboarding@resend.dev>";
-  const resend = new Resend(resendKey);
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: { user: gmailUser, pass: gmailPass },
+  });
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -29,17 +36,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden">
         <tr>
           <td style="background:#f97316;padding:32px;text-align:center">
-            <img src="https://mediaschoolcompassion.vercel.app/Digital%20School%20Logo.png" alt="Média School" height="80" style="border-radius:12px" />
+            <h1 style="margin:0;color:#ffffff;font-size:28px;letter-spacing:-0.5px">Média School</h1>
           </td>
         </tr>
         <tr>
           <td style="padding:40px 32px">
-            <h1 style="margin:0 0 16px;color:#111827;font-size:24px">Bonne nouvelle ! 🎉</h1>
-            <p style="margin:0 0 12px;color:#374151;font-size:16px;line-height:1.6">
+            <h2 style="margin:0 0 16px;color:#111827;font-size:22px">Bonne nouvelle ! 🎉</h2>
+            <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.7">
               La formation <strong style="color:#f97316">${courseTitle}</strong> est maintenant disponible avec ses premiers modules !
             </p>
-            <p style="margin:0 0 32px;color:#6b7280;font-size:15px;line-height:1.6">
-              Vous avez demandé à être averti lors de la sortie de cette formation — le moment est venu de commencer votre apprentissage.
+            <p style="margin:0 0 32px;color:#374151;font-size:15px;line-height:1.7">
+              Vous avez demandé à être averti — le moment est venu de commencer votre apprentissage.
             </p>
             <div style="text-align:center">
               <a href="${courseUrl}" style="display:inline-block;background:#f97316;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px">
@@ -49,9 +56,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           </td>
         </tr>
         <tr>
-          <td style="padding:24px 32px;border-top:1px solid #f3f4f6;text-align:center">
+          <td style="padding:20px 32px;border-top:1px solid #f3f4f6;text-align:center">
             <p style="margin:0;color:#9ca3af;font-size:12px">Média School Compassion · Bruxelles</p>
-            <p style="margin:4px 0 0;color:#9ca3af;font-size:12px">Formations gratuites pour tous.</p>
+            <p style="margin:4px 0 0;color:#9ca3af;font-size:12px">Powered by Martinez Muzela</p>
           </td>
         </tr>
       </table>
@@ -65,15 +72,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   for (const email of emails) {
     try {
-      await resend.emails.send({
-        from,
+      await transporter.sendMail({
+        from: `"Média School Compassion" <${gmailUser}>`,
         to: email,
         subject: `🎓 La formation "${courseTitle}" est maintenant disponible !`,
         html,
       });
       sent++;
     } catch (err) {
-      errors.push(`${email}: ${err}`);
+      errors.push(`${email}: ${(err as Error).message}`);
     }
   }
 

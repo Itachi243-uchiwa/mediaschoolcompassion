@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [waitlistEmail, setWaitlistEmail] = useState("");
   const [waitlistLoading, setWaitlistLoading] = useState(false);
   const [waitlistDone, setWaitlistDone] = useState(false);
+  const [waitlistError, setWaitlistError] = useState("");
 
   const userName = user?.displayName?.split(" ")[0] || user?.email?.split("@")[0] || "";
   const userPhoto = user?.photoURL;
@@ -357,6 +358,11 @@ const Dashboard = () => {
                   onChange={(e) => setWaitlistEmail(e.target.value)}
                 />
               </div>
+              {waitlistError && (
+                <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-xs text-destructive">
+                  {waitlistError}
+                </div>
+              )}
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" className="flex-1" onClick={() => setWaitlistDialog(null)}>
                   Non merci
@@ -367,14 +373,25 @@ const Dashboard = () => {
                   onClick={async () => {
                     if (!waitlistDialog || !waitlistEmail) return;
                     setWaitlistLoading(true);
-                    await subscribeToWaitlist(waitlistDialog.id, waitlistEmail);
-                    await fetch("/api/subscribe-waitlist", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ email: waitlistEmail, courseTitle: waitlistDialog.title }),
-                    });
-                    setWaitlistLoading(false);
-                    setWaitlistDone(true);
+                    setWaitlistError("");
+                    try {
+                      await subscribeToWaitlist(waitlistDialog.id, waitlistEmail);
+                      const res = await fetch("/api/subscribe-waitlist", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: waitlistEmail, courseTitle: waitlistDialog.title }),
+                      });
+                      if (!res.ok) {
+                        const body = await res.json().catch(() => ({}));
+                        setWaitlistError(body.error || `Erreur ${res.status} — vérifiez la configuration RESEND_API_KEY sur Vercel.`);
+                      } else {
+                        setWaitlistDone(true);
+                      }
+                    } catch {
+                      setWaitlistError("Impossible de joindre le serveur. Vérifiez votre connexion.");
+                    } finally {
+                      setWaitlistLoading(false);
+                    }
                   }}
                 >
                   {waitlistLoading ? (
