@@ -14,7 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { LogOut, Plus, Pencil, Trash2, ArrowLeft, BookOpen, Video as VideoIcon, Layers } from "lucide-react";
+import { LogOut, Plus, Pencil, Trash2, ArrowLeft, BookOpen, Video as VideoIcon, Layers, Bell, Users } from "lucide-react";
+import { getWaitlistForCourse, markWaitlistNotified, WaitlistEntry } from "@/lib/firestore";
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
@@ -26,9 +27,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <BookOpen className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <img src="/Digital School Logo.png" alt="Média School" className="h-9 w-9 rounded-lg object-cover" />
             <span className="font-bold text-foreground">Media School — Admin</span>
           </div>
           <div className="flex items-center gap-2">
@@ -137,13 +136,35 @@ const CourseModules = () => {
   const [editing, setEditing] = useState<Module | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Module | null>(null);
   const [form, setForm] = useState({ title: "", description: "", duration: "", sort_order: "0" });
+  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
+  const [notifying, setNotifying] = useState(false);
+  const [notified, setNotified] = useState(false);
 
   const load = async () => {
     if (!courseId) return;
-    const [c, mods] = await Promise.all([getCourse(courseId), getModules(courseId)]);
-    setCourse(c); setModules(mods); setLoading(false);
+    const [c, mods, wl] = await Promise.all([getCourse(courseId), getModules(courseId), getWaitlistForCourse(courseId)]);
+    setCourse(c); setModules(mods); setWaitlist(wl); setLoading(false);
   };
   useEffect(() => { load(); }, [courseId]);
+
+  const handleNotifyWaitlist = async () => {
+    if (!course || !courseId || waitlist.length === 0) return;
+    setNotifying(true);
+    const emails = waitlist.map((w) => w.email);
+    const courseUrl = `${window.location.origin}/formation/${courseId}`;
+    try {
+      await fetch("/api/notify-waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emails, courseTitle: course.title, courseUrl }),
+      });
+      await markWaitlistNotified(courseId, waitlist.map((w) => w.id));
+      setWaitlist([]);
+      setNotified(true);
+    } finally {
+      setNotifying(false);
+    }
+  };
 
   const openCreate = () => { setEditing(null); setForm({ title: "", description: "", duration: "", sort_order: String(modules.length) }); setShowForm(true); };
   const openEdit = (m: Module) => { setEditing(m); setForm({ title: m.title, description: m.description, duration: m.duration, sort_order: String(m.sort_order) }); setShowForm(true); };
@@ -170,6 +191,35 @@ const CourseModules = () => {
         </div>
         <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />Nouveau module</Button>
       </div>
+
+      {/* Bandeau waitlist */}
+      {(waitlist.length > 0 || notified) && (
+        <div className={`mb-6 rounded-xl border p-4 flex items-center justify-between gap-4 ${notified ? "border-green-500/30 bg-green-500/5" : "border-primary/30 bg-primary/5"}`}>
+          <div className="flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${notified ? "bg-green-500/15" : "bg-primary/15"}`}>
+              {notified ? <Bell className="h-4 w-4 text-green-500" /> : <Users className="h-4 w-4 text-primary" />}
+            </div>
+            <div>
+              <p className="font-semibold text-foreground text-sm">
+                {notified ? "Abonnés notifiés !" : `${waitlist.length} abonné${waitlist.length > 1 ? "s" : ""} en attente`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {notified
+                  ? "Les emails ont été envoyés avec succès."
+                  : modules.length > 0
+                  ? "Des utilisateurs veulent être avertis. Cliquez pour envoyer les emails."
+                  : "Ajoutez des modules pour pouvoir notifier les abonnés."}
+              </p>
+            </div>
+          </div>
+          {!notified && modules.length > 0 && (
+            <Button size="sm" className="gap-2 flex-shrink-0" onClick={handleNotifyWaitlist} disabled={notifying}>
+              {notifying ? <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" /> : <Bell className="h-4 w-4" />}
+              Notifier les abonnés
+            </Button>
+          )}
+        </div>
+      )}
       <div className="space-y-4">
         {modules.map((mod, i) => (
           <div key={mod.id} className="flex items-center gap-4 p-5 rounded-xl border border-border bg-card">

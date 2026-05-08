@@ -12,6 +12,35 @@ import {
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
+
+export interface WaitlistEntry {
+  id: string;
+  email: string;
+  subscribedAt: Timestamp;
+  notified: boolean;
+}
+
+export const subscribeToWaitlist = async (courseId: string, email: string): Promise<void> => {
+  const docId = email.toLowerCase().replace(/[^a-z0-9]/g, "_");
+  await setDoc(doc(db, "courses", courseId, "waitlist", docId), {
+    email,
+    subscribedAt: serverTimestamp(),
+    notified: false,
+  });
+};
+
+export const getWaitlistForCourse = async (courseId: string): Promise<WaitlistEntry[]> => {
+  const snap = await getDocs(collection(db, "courses", courseId, "waitlist"));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() } as WaitlistEntry))
+    .filter((e) => !e.notified);
+};
+
+export const markWaitlistNotified = async (courseId: string, ids: string[]): Promise<void> => {
+  for (const id of ids) {
+    await updateDoc(doc(db, "courses", courseId, "waitlist", id), { notified: true });
+  }
+};
 import { db } from "./firebase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

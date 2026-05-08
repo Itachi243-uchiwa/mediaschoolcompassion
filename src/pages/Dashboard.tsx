@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { getCourses, getModules, getVideos, getUserProgress, Course } from "@/lib/firestore";
+import { getCourses, getModules, getVideos, getUserProgress, subscribeToWaitlist, Course } from "@/lib/firestore";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ProgressBar from "@/components/ProgressBar";
 import DonationButton from "@/components/DonationButton";
-import { Play, LogOut, BookOpen, ChevronRight, Trophy, Flame, Heart } from "lucide-react";
+import { Play, LogOut, ChevronRight, Trophy, Flame, Heart, Lock, Bell, CheckCircle2 } from "lucide-react";
 
 interface CourseWithProgress extends Course {
   totalVideos: number;
   watchedVideos: number;
+  totalModules: number;
 }
 
 const Dashboard = () => {
@@ -18,6 +21,10 @@ const Dashboard = () => {
   const [courses, setCourses] = useState<CourseWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastCourse, setLastCourse] = useState<CourseWithProgress | null>(null);
+  const [waitlistDialog, setWaitlistDialog] = useState<CourseWithProgress | null>(null);
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+  const [waitlistDone, setWaitlistDone] = useState(false);
 
   const userName = user?.displayName?.split(" ")[0] || user?.email?.split("@")[0] || "";
   const userPhoto = user?.photoURL;
@@ -39,7 +46,7 @@ const Dashboard = () => {
           totalVideos += videos.length;
           watchedVideos += videos.filter((v) => completedIds.has(v.id)).length;
         }
-        coursesWithProgress.push({ ...course, totalVideos, watchedVideos });
+        coursesWithProgress.push({ ...course, totalVideos, watchedVideos, totalModules: modules.length });
       }
 
       setCourses(coursesWithProgress);
@@ -73,9 +80,7 @@ const Dashboard = () => {
       <nav className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <BookOpen className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <img src="/Digital School Logo.png" alt="Média School" className="h-9 w-9 rounded-lg object-cover" />
             <span className="font-bold text-foreground tracking-tight">Media School</span>
           </div>
           <div className="flex items-center gap-3">
@@ -207,15 +212,59 @@ const Dashboard = () => {
 
           {courses.length === 0 ? (
             <div className="text-center py-20 text-muted-foreground border border-dashed border-border rounded-2xl">
-              <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-30" />
+              <Lock className="h-10 w-10 mx-auto mb-3 opacity-30" />
               <p className="font-medium">Aucune formation disponible pour le moment.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {courses.map((course) => {
+                const isLocked = course.totalModules === 0;
                 const percent = course.totalVideos > 0 ? Math.round((course.watchedVideos / course.totalVideos) * 100) : 0;
-                const isCompleted = course.watchedVideos > 0 && course.watchedVideos >= course.totalVideos;
-                const isStarted = course.watchedVideos > 0 && !isCompleted;
+                const isCompleted = !isLocked && course.watchedVideos > 0 && course.watchedVideos >= course.totalVideos;
+                const isStarted = !isLocked && course.watchedVideos > 0 && !isCompleted;
+
+                if (isLocked) {
+                  return (
+                    <div
+                      key={course.id}
+                      className="group rounded-2xl border border-border/50 bg-card overflow-hidden opacity-80"
+                    >
+                      <div className="relative aspect-video bg-secondary overflow-hidden">
+                        {course.image_url ? (
+                          <img src={course.image_url} alt={course.title} className="w-full h-full object-cover grayscale" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-muted to-secondary flex items-center justify-center">
+                            <Lock className="h-10 w-10 text-muted-foreground/40" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
+                          <div className="w-14 h-14 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center backdrop-blur-sm">
+                            <Lock className="h-6 w-6 text-white" />
+                          </div>
+                          <span className="text-white text-sm font-semibold tracking-wide">Bientôt disponible</span>
+                        </div>
+                      </div>
+
+                      <div className="p-5">
+                        <h3 className="font-semibold text-foreground mb-1.5 line-clamp-1">{course.title}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{course.description}</p>
+                        <Button
+                          className="w-full gap-2"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setWaitlistEmail(user?.email || "");
+                            setWaitlistDone(false);
+                            setWaitlistDialog(course);
+                          }}
+                        >
+                          <Bell className="h-3.5 w-3.5" />
+                          Être averti à la sortie
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }
 
                 return (
                   <div
@@ -228,7 +277,7 @@ const Dashboard = () => {
                         <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center">
-                          <BookOpen className="h-10 w-10 text-primary/40" />
+                          <Play className="h-10 w-10 text-primary/40" />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -270,6 +319,76 @@ const Dashboard = () => {
           )}
         </section>
       </div>
+
+      {/* ── Dialog inscription waitlist ── */}
+      <Dialog open={!!waitlistDialog} onOpenChange={(open) => { if (!open) setWaitlistDialog(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
+              Être averti à la sortie
+            </DialogTitle>
+          </DialogHeader>
+          {waitlistDone ? (
+            <div className="flex flex-col items-center gap-4 py-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center">
+                <CheckCircle2 className="h-7 w-7 text-green-500" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground mb-1">Inscription confirmée !</p>
+                <p className="text-sm text-muted-foreground">
+                  Vous recevrez un email dès que la formation <strong>{waitlistDialog?.title}</strong> sera disponible.
+                </p>
+              </div>
+              <Button variant="outline" onClick={() => setWaitlistDialog(null)} className="mt-2">Fermer</Button>
+            </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Souhaitez-vous être averti lors de la sortie des modules de la formation{" "}
+                <strong className="text-foreground">{waitlistDialog?.title}</strong> ?
+              </p>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Votre adresse email</label>
+                <Input
+                  type="email"
+                  placeholder="votre@email.com"
+                  value={waitlistEmail}
+                  onChange={(e) => setWaitlistEmail(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button variant="outline" className="flex-1" onClick={() => setWaitlistDialog(null)}>
+                  Non merci
+                </Button>
+                <Button
+                  className="flex-1 gap-2"
+                  disabled={!waitlistEmail || waitlistLoading}
+                  onClick={async () => {
+                    if (!waitlistDialog || !waitlistEmail) return;
+                    setWaitlistLoading(true);
+                    await subscribeToWaitlist(waitlistDialog.id, waitlistEmail);
+                    await fetch("/api/subscribe-waitlist", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: waitlistEmail, courseTitle: waitlistDialog.title }),
+                    });
+                    setWaitlistLoading(false);
+                    setWaitlistDone(true);
+                  }}
+                >
+                  {waitlistLoading ? (
+                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Bell className="h-4 w-4" />
+                  )}
+                  Oui, m'avertir
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* ── Footer ── */}
       <footer className="border-t border-border/40 py-8 mt-4">
