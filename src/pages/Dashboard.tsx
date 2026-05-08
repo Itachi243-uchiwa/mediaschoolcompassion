@@ -393,9 +393,14 @@ const Dashboard = () => {
       {/* ── Footer ── */}
       <footer className="border-t border-border/40 py-8 mt-4">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground/50">
-            Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
-          </p>
+          <div className="flex flex-col items-center sm:items-start gap-0.5">
+            <p className="text-xs text-muted-foreground/60">
+              © Media Compassion Bruxelles
+            </p>
+            <p className="text-xs text-muted-foreground/40">
+              Powered by <span className="font-medium text-muted-foreground/60">Martinez Muzela</span>
+            </p>
+          </div>
           <DonationButton
             variant="ghost"
             size="sm"

@@ -50,9 +50,10 @@ const LoginPage = () => {
 
         {error && <p className="text-destructive text-sm mt-4">{error}</p>}
 
-        <p className="mt-10 text-xs text-muted-foreground/50">
-          Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
-        </p>
+        <div className="mt-10 flex flex-col items-center gap-0.5">
+          <p className="text-xs text-muted-foreground/60">© Media Compassion Bruxelles</p>
+          <p className="text-xs text-muted-foreground/40">Powered by <span className="font-medium text-muted-foreground/60">Martinez Muzela</span></p>
+        </div>
       </div>
     </div>
   );

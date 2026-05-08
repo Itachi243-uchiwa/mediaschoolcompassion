@@ -346,8 +346,8 @@ const ModuleVideos = () => {
               <div className="space-y-2"><Label>Ordre</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: e.target.value })} /></div>
             </div>
             <div className="space-y-2">
-              <Label>URL YouTube (embed)</Label>
-              <Input value={form.youtube_url} onChange={(e) => setForm({ ...form, youtube_url: e.target.value })} placeholder="https://www.youtube.com/embed/..." />
+              <Label>URL de la vidéo (YouTube ou Google Drive)</Label>
+              <Input value={form.youtube_url} onChange={(e) => setForm({ ...form, youtube_url: e.target.value })} placeholder="https://www.youtube.com/embed/... ou https://drive.google.com/file/d/.../preview" />
               <p className="text-xs text-muted-foreground">Laisser vide si la vidéo n'est pas encore prête</p>
             </div>
             <ImageUpload label="Miniature (affichée si la vidéo n'est pas encore disponible)" value={form.thumbnail} onChange={(url) => setForm({ ...form, thumbnail: url })} />

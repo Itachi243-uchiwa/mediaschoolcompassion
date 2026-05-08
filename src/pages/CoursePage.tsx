@@ -5,7 +5,7 @@ import { getCourse, getModules, getVideos, getUserProgress, setVideoProgress, Mo
 import ProgressBar from "@/components/ProgressBar";
 import DonationButton from "@/components/DonationButton";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Play, CheckCircle2, Circle, ChevronDown, ChevronUp, Lock, Heart } from "lucide-react";
+import { ArrowLeft, Play, CheckCircle2, Circle, ChevronDown, ChevronUp, Lock, Heart, LayoutGrid, List } from "lucide-react";
 
 interface VideoWithProgress extends Video {
   completed: boolean;
@@ -25,6 +25,7 @@ const CoursePage = () => {
   const [courseImage, setCourseImage] = useState("");
   const [modules, setModules] = useState<ModuleWithData[]>([]);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<Record<string, boolean>>({});
 
@@ -141,7 +142,92 @@ const CoursePage = () => {
         </div>
       </div>
 
-      {/* ── Modules accordion ── */}
+      {/* ── Modules header + toggle ── */}
+      <div className="max-w-4xl mx-auto px-4 pb-4 flex items-center justify-between">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+          {modules.length} module{modules.length !== 1 ? "s" : ""}
+        </h2>
+        <div className="flex items-center gap-1 rounded-lg border border-border p-1">
+          <button
+            onClick={() => setViewMode("list")}
+            className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            title="Vue liste"
+          >
+            <List className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            title="Vue grille"
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Vue grille ── */}
+      {viewMode === "grid" && (
+        <div className="max-w-4xl mx-auto px-4 pb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {modules.map((mod, i) => {
+              const modWatched = mod.videos.filter((v) => v.completed).length;
+              const modPercent = mod.videos.length > 0 ? Math.round((modWatched / mod.videos.length) * 100) : 0;
+              const modDone = mod.loaded && modWatched >= mod.videos.length && mod.videos.length > 0;
+
+              return (
+                <div
+                  key={mod.id}
+                  onClick={() => navigate(`/formation/${courseId}/module/${mod.id}`)}
+                  className="group rounded-2xl border border-border bg-card overflow-hidden cursor-pointer hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
+                >
+                  {/* Top color bar */}
+                  <div className={`h-1.5 w-full ${modDone ? "bg-green-500" : modPercent > 0 ? "bg-primary" : "bg-border"}`} />
+
+                  <div className="p-5">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${modDone ? "bg-green-500/10" : "bg-primary/10"}`}>
+                        {modDone
+                          ? <CheckCircle2 className="h-5 w-5 text-green-500" />
+                          : <span className="text-sm font-bold text-primary">{i + 1}</span>}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 text-sm leading-snug">
+                          {mod.title}
+                        </h3>
+                        {mod.duration && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{mod.duration}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {mod.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{mod.description}</p>
+                    )}
+
+                    {mod.loaded && mod.videos.length > 0 && (
+                      <div className="space-y-1.5 mb-3">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>{mod.videos.length} vidéo{mod.videos.length !== 1 ? "s" : ""}</span>
+                          <span className="font-medium text-foreground">{modPercent}%</span>
+                        </div>
+                        <ProgressBar value={modPercent} size="sm" />
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between text-xs text-primary font-medium mt-3 group-hover:gap-2 transition-all">
+                      <span>Voir les vidéos</span>
+                      <Play className="h-3.5 w-3.5" fill="currentColor" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Vue liste (accordion) ── */}
+      {viewMode === "list" && (
       <div className="max-w-4xl mx-auto px-4 pb-10 space-y-3">
         {modules.map((mod, i) => {
           const isOpen = expandedIds.has(mod.id);
@@ -252,6 +338,7 @@ const CoursePage = () => {
           );
         })}
       </div>
+      )}
 
       {/* ── Donation section — after modules ── */}
       <div className="max-w-4xl mx-auto px-4 pb-16">
@@ -287,9 +374,10 @@ const CoursePage = () => {
       {/* ── Footer ── */}
       <footer className="border-t border-border/40 py-6 mt-4">
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground/50">
-            Powered by <span className="font-medium text-muted-foreground/70">Media Compassion Bruxelles</span>
-          </p>
+          <div className="flex flex-col items-center sm:items-start gap-0.5">
+            <p className="text-xs text-muted-foreground/60">© Media Compassion Bruxelles</p>
+            <p className="text-xs text-muted-foreground/40">Powered by <span className="font-medium text-muted-foreground/60">Martinez Muzela</span></p>
+          </div>
           <DonationButton
             variant="ghost"
             size="sm"
