@@ -43,6 +43,18 @@ export const markWaitlistNotified = async (courseId: string, ids: string[]): Pro
 };
 import { db } from "./firebase";
 
+// ─── Access code ──────────────────────────────────────────────────────────────
+
+export const getAccessCode = async (): Promise<string | null> => {
+  const snap = await getDoc(doc(db, "settings", "access"));
+  if (!snap.exists()) return null;
+  return snap.data().code ?? null;
+};
+
+export const setAccessCode = async (code: string): Promise<void> => {
+  await setDoc(doc(db, "settings", "access"), { code });
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Course {

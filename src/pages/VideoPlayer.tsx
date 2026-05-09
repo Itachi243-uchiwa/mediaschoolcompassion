@@ -60,10 +60,29 @@ const VideoPlayer = () => {
   }
 
   const isGoogleDrive = video.youtube_url?.includes("drive.google.com");
+
+  const getYouTubeEmbedUrl = (url: string): string | null => {
+    try {
+      const parsed = new URL(url);
+      let videoId: string | null = null;
+      // youtu.be/VIDEO_ID
+      if (parsed.hostname === "youtu.be") {
+        videoId = parsed.pathname.slice(1).split("?")[0];
+      // youtube.com/watch?v=VIDEO_ID or m.youtube.com/watch?v=VIDEO_ID
+      } else if (parsed.hostname.includes("youtube.com")) {
+        videoId = parsed.searchParams.get("v");
+      }
+      if (!videoId) return null;
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+    } catch {
+      return null;
+    }
+  };
+
   const embedUrl = video.youtube_url
     ? isGoogleDrive
       ? video.youtube_url
-      : `${video.youtube_url}${video.youtube_url.includes("?") ? "&" : "?"}autoplay=1`
+      : getYouTubeEmbedUrl(video.youtube_url)
     : null;
 
   return (

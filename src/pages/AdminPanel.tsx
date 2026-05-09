@@ -5,6 +5,7 @@ import {
   getCourses, getCourse, createCourse, updateCourse, deleteCourse,
   getModules, getModule, createModule, updateModule, deleteModule,
   getVideos, createVideo, updateVideo, deleteVideo,
+  getAccessCode, setAccessCode,
   Course, Module, Video,
 } from "@/lib/firestore";
 import ImageUpload from "@/components/ImageUpload";
@@ -14,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { LogOut, Plus, Pencil, Trash2, ArrowLeft, BookOpen, Video as VideoIcon, Layers, Bell, Users } from "lucide-react";
+import { LogOut, Plus, Pencil, Trash2, ArrowLeft, BookOpen, Video as VideoIcon, Layers, Bell, Users, Settings, Eye, EyeOff, Lock } from "lucide-react";
 import { getWaitlistForCourse, markWaitlistNotified, WaitlistEntry } from "@/lib/firestore";
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
@@ -89,7 +90,10 @@ const CoursesList = () => {
           <h1 className="text-3xl font-bold text-foreground">Formations</h1>
           <p className="text-muted-foreground mt-1">{courses.length} formation{courses.length !== 1 ? "s" : ""}</p>
         </div>
-        <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />Nouvelle formation</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => navigate("/admin/settings")} className="gap-2"><Settings className="h-4 w-4" />Paramètres</Button>
+          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" />Nouvelle formation</Button>
+        </div>
       </div>
       <div className="space-y-4">
         {courses.map((course) => (
@@ -401,6 +405,80 @@ const ModuleVideos = () => {
   );
 };
 
+// ─── Settings ─────────────────────────────────────────────────────────────────
+
+const AdminSettings = () => {
+  const navigate = useNavigate();
+  const [code, setCode] = useState("");
+  const [currentCode, setCurrentCode] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [showCode, setShowCode] = useState(false);
+
+  useEffect(() => {
+    getAccessCode().then((c) => { setCurrentCode(c); setCode(c ?? ""); setLoading(false); });
+  }, []);
+
+  const handleSave = async () => {
+    if (!code.trim()) return;
+    setSaving(true);
+    await setAccessCode(code.trim());
+    setCurrentCode(code.trim());
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  if (loading) return <AdminLayout><div className="animate-pulse text-muted-foreground">Chargement...</div></AdminLayout>;
+
+  return (
+    <AdminLayout>
+      <div className="flex items-center gap-3 mb-8">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/admin")}><ArrowLeft className="h-4 w-4" /></Button>
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Paramètres</h1>
+          <p className="text-muted-foreground mt-1">Gestion de l'accès au site</p>
+        </div>
+      </div>
+
+      <div className="max-w-lg p-6 rounded-xl border border-border bg-card space-y-5">
+        <div>
+          <h2 className="font-semibold text-foreground flex items-center gap-2 mb-1"><Lock className="h-4 w-4" />Code d'accès</h2>
+          <p className="text-sm text-muted-foreground">Seules les personnes possédant ce code peuvent créer un compte et accéder au site.</p>
+        </div>
+        {currentCode === null && (
+          <div className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-800">
+            Aucun code défini — le site est actuellement accessible sans restriction.
+          </div>
+        )}
+        <div className="space-y-2">
+          <Label>Nouveau code d'accès</Label>
+          <div className="relative">
+            <Input
+              type={showCode ? "text" : "password"}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Entrez le code d'accès"
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowCode((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+        <Button onClick={handleSave} disabled={saving || !code.trim()} className="w-full">
+          {saving ? "Enregistrement..." : saved ? "Code enregistré !" : "Enregistrer le code"}
+        </Button>
+      </div>
+    </AdminLayout>
+  );
+};
+
 // ─── Router ───────────────────────────────────────────────────────────────────
 
 const AdminPanel = () => (
@@ -408,6 +486,7 @@ const AdminPanel = () => (
     <Route index element={<CoursesList />} />
     <Route path="courses/:courseId" element={<CourseModules />} />
     <Route path="courses/:courseId/modules/:moduleId" element={<ModuleVideos />} />
+    <Route path="settings" element={<AdminSettings />} />
   </Routes>
 );
 
