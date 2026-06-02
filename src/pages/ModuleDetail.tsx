@@ -18,6 +18,10 @@ const ModuleDetail = () => {
   const [moduleDescription, setModuleDescription] = useState("");
   const [videos, setVideos] = useState<VideoWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  const [locked, setLocked] = useState(false);
+  const [moduleAccessCode, setModuleAccessCode] = useState("");
+  const [codeInput, setCodeInput] = useState("");
+  const [codeError, setCodeError] = useState(false);
 
   const loadData = async () => {
     if (!courseId || !moduleId || !user) return;
@@ -25,6 +29,22 @@ const ModuleDetail = () => {
     if (!mod) { setLoading(false); return; }
     setModuleTitle(mod.title);
     setModuleDescription(mod.description);
+    if (mod.access_code) {
+      try {
+        const unlocked: string[] = JSON.parse(localStorage.getItem("msc_unlocked_modules") ?? "[]");
+        if (!unlocked.includes(moduleId)) {
+          setModuleAccessCode(mod.access_code);
+          setLocked(true);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        setModuleAccessCode(mod.access_code);
+        setLocked(true);
+        setLoading(false);
+        return;
+      }
+    }
     const videosData = await getVideos(courseId, moduleId);
     const progress = await getUserProgress(user.uid);
     setVideos(videosData.map((v) => ({ ...v, completed: !!progress[v.id] })));
@@ -32,6 +52,22 @@ const ModuleDetail = () => {
   };
 
   useEffect(() => { loadData(); }, [moduleId, user]);
+
+  const handleUnlock = () => {
+    if (codeInput.trim() !== moduleAccessCode) {
+      setCodeError(true);
+      return;
+    }
+    try {
+      const unlocked: string[] = JSON.parse(localStorage.getItem("msc_unlocked_modules") ?? "[]");
+      if (!unlocked.includes(moduleId!)) unlocked.push(moduleId!);
+      localStorage.setItem("msc_unlocked_modules", JSON.stringify(unlocked));
+    } catch {
+      localStorage.setItem("msc_unlocked_modules", JSON.stringify([moduleId]));
+    }
+    setLocked(false);
+    loadData();
+  };
 
   const toggleWatched = async (videoId: string, completed: boolean) => {
     if (!user) return;
@@ -43,6 +79,40 @@ const ModuleDetail = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (locked) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+          <div className="w-16 h-16 rounded-2xl bg-yellow-500/10 flex items-center justify-center mx-auto mb-6">
+            <Lock className="h-8 w-8 text-yellow-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground text-center mb-2">Module BONUS</h1>
+          <p className="text-sm text-muted-foreground text-center mb-8 leading-relaxed">
+            Ce module est réservé aux membres de la team.<br />Entrez votre code d'accès pour continuer.
+          </p>
+          <div className="space-y-3">
+            <input
+              type="password"
+              value={codeInput}
+              onChange={(e) => { setCodeInput(e.target.value); setCodeError(false); }}
+              onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
+              placeholder="Code d'accès"
+              className={`w-full px-4 py-3 rounded-xl border bg-card text-foreground text-center text-lg font-mono focus:outline-none focus:ring-2 transition-colors ${
+                codeError ? "border-destructive focus:ring-destructive/30" : "border-border focus:ring-primary/30"
+              }`}
+              autoFocus
+            />
+            {codeError && <p className="text-sm text-destructive text-center">Code incorrect. Réessayez.</p>}
+            <Button className="w-full" onClick={handleUnlock}>Accéder au module</Button>
+          </div>
+          <Button variant="ghost" className="w-full mt-3 text-muted-foreground" onClick={() => navigate(`/formation/${courseId}`)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />Retour à la formation
+          </Button>
+        </div>
       </div>
     );
   }

@@ -158,7 +158,7 @@ const CourseModules = () => {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Module | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Module | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", duration: "", sort_order: "0" });
+  const [form, setForm] = useState({ title: "", description: "", duration: "", sort_order: "0", access_code: "" });
   const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
   const [notifying, setNotifying] = useState(false);
   const [notified, setNotified] = useState(false);
@@ -189,11 +189,11 @@ const CourseModules = () => {
     }
   };
 
-  const openCreate = () => { setEditing(null); setForm({ title: "", description: "", duration: "", sort_order: String(modules.length) }); setShowForm(true); };
-  const openEdit = (m: Module) => { setEditing(m); setForm({ title: m.title, description: m.description, duration: m.duration, sort_order: String(m.sort_order) }); setShowForm(true); };
+  const openCreate = () => { setEditing(null); setForm({ title: "", description: "", duration: "", sort_order: String(modules.length), access_code: "" }); setShowForm(true); };
+  const openEdit = (m: Module) => { setEditing(m); setForm({ title: m.title, description: m.description, duration: m.duration, sort_order: String(m.sort_order), access_code: m.access_code ?? "" }); setShowForm(true); };
   const handleSave = async () => {
     if (!courseId) return;
-    const data = { title: form.title, description: form.description, duration: form.duration, sort_order: Number(form.sort_order) };
+    const data = { title: form.title, description: form.description, duration: form.duration, sort_order: Number(form.sort_order), access_code: form.access_code.trim() };
     editing ? await updateModule(courseId, editing.id, data) : await createModule(courseId, data);
     setShowForm(false); load();
   };
@@ -264,7 +264,10 @@ const CourseModules = () => {
               <span className="text-sm font-bold text-primary">{i + 1}</span>
             </div>
             <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/admin/courses/${courseId}/modules/${mod.id}`)}>
-              <h3 className="font-semibold text-foreground hover:text-primary transition-colors">{mod.title}</h3>
+              <h3 className="font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-2">
+                {mod.title}
+                {mod.access_code && <Lock className="h-3.5 w-3.5 text-yellow-600 flex-shrink-0" />}
+              </h3>
               <p className="text-sm text-muted-foreground">{mod.duration}{mod.duration && mod.description ? " · " : ""}{mod.description?.slice(0, 60)}{(mod.description?.length ?? 0) > 60 ? "..." : ""}</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -284,6 +287,10 @@ const CourseModules = () => {
             <div className="space-y-2"><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} /></div>
             <div className="space-y-2"><Label>Durée estimée</Label><Input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="45 min" /></div>
             <div className="space-y-2"><Label>Ordre d'affichage</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: e.target.value })} /></div>
+            <div className="space-y-2">
+              <Label>Code d'accès <span className="text-muted-foreground font-normal text-xs">(optionnel — laisser vide pour accès libre)</span></Label>
+              <Input value={form.access_code} onChange={(e) => setForm({ ...form, access_code: e.target.value })} placeholder="Ex: 930830" />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowForm(false)}>Annuler</Button>

@@ -71,6 +71,7 @@ export interface Module {
   description: string;
   duration: string;
   sort_order: number;
+  access_code?: string;
 }
 
 export interface Video {
