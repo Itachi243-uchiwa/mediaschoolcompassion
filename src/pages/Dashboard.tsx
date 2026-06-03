@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import ProgressBar from "@/components/ProgressBar";
 import DonationButton from "@/components/DonationButton";
 import { Play, LogOut, ChevronRight, Trophy, Flame, Heart, Lock, Bell, CheckCircle2 } from "lucide-react";
+import InstallPWAButton from "@/components/InstallPWAButton";
 
 interface CourseWithProgress extends Course {
   totalVideos: number;
@@ -85,6 +86,7 @@ const Dashboard = () => {
             <span className="font-bold text-foreground tracking-tight">Media School</span>
           </div>
           <div className="flex items-center gap-3">
+            <InstallPWAButton />
             {/* Donation button in navbar */}
             <DonationButton
               size="sm"
