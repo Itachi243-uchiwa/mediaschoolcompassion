@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ProgressBar from "@/components/ProgressBar";
 import DonationButton from "@/components/DonationButton";
-import { Play, LogOut, ChevronRight, Trophy, Flame, Heart, Lock, Bell, CheckCircle2 } from "lucide-react";
 import InstallPWAButton from "@/components/InstallPWAButton";
+import MobileHero from "@/components/MobileHero";
+import { motion } from "framer-motion";
+import { Play, ChevronRight, Trophy, Flame, Heart, Lock, Bell, CheckCircle2, BookOpen } from "lucide-react";
 
 interface CourseWithProgress extends Course {
   totalVideos: number;
@@ -76,41 +78,26 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
 
-      {/* ── Navbar ── */}
-      <nav className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/Digital School Logo.png" alt="Média School" className="h-9 w-9 rounded-lg object-cover" />
-            <span className="font-bold text-foreground tracking-tight">Media School</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <InstallPWAButton />
-            {/* Donation button in navbar */}
-            <DonationButton
-              size="sm"
-              variant="outline"
-              label="Soutenir"
-              className="hidden sm:flex border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
-              context="Votre don aide à maintenir les formations de Media School Compassion accessibles gratuitement."
-            />
-            {userPhoto && (
-              <img src={userPhoto} alt={userName} className="w-8 h-8 rounded-full ring-2 ring-border" />
-            )}
-            <Button variant="ghost" size="sm" onClick={async () => { await logout(); navigate("/login"); }} className="gap-2 text-muted-foreground hover:text-foreground">
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Déconnexion</span>
-            </Button>
-          </div>
-        </div>
-      </nav>
+      {/* ════════════════════════════════════
+          MOBILE HERO — animé (sm:hidden)
+      ════════════════════════════════════ */}
+      <MobileHero
+        userName={userName}
+        userPhoto={userPhoto}
+        totalWatched={totalWatched}
+        globalPercent={globalPercent}
+        coursesCount={courses.length}
+        totalVideos={totalVideos}
+      />
 
-      {/* ── Hero ── */}
-      <div className="relative overflow-hidden border-b border-border/40">
+      {/* ════════════════════════════════════
+          DESKTOP HERO — full (hidden on mobile)
+      ════════════════════════════════════ */}
+      <div className="hidden sm:block relative overflow-hidden border-b border-border/40">
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -top-12 right-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-
         <div className="max-w-6xl mx-auto px-4 py-12 md:py-16 relative">
           <p className="text-sm font-medium text-primary mb-2">Bon retour 👋</p>
           <h1 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight mb-4">
@@ -119,7 +106,6 @@ const Dashboard = () => {
           <p className="text-muted-foreground text-lg max-w-xl">
             Continue ton apprentissage là où tu t'es arrêté — chaque vidéo te rapproche de ton objectif.
           </p>
-
           {totalVideos > 0 && (
             <div className="flex flex-wrap items-center gap-6 mt-8">
               <div className="flex items-center gap-2">
@@ -148,14 +134,49 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-10 space-y-12">
+      {/* ════════════════════════════════════
+          MAIN CONTENT
+      ════════════════════════════════════ */}
+      <motion.div
+        className="max-w-6xl mx-auto px-4 py-4 sm:py-10 space-y-6 sm:space-y-12 pb-nav sm:pb-10"
+        initial="hidden"
+        animate="show"
+        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.35 } } }}
+      >
 
-        {/* ── Continuer ── */}
+        {/* ── Continue / Reprendre ── */}
         {lastCourse && (
-          <section>
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">Reprendre</h2>
+          <motion.section variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } } }}>
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Reprendre</h2>
+
+            {/* Mobile: compact horizontal card */}
             <div
-              className="relative overflow-hidden rounded-2xl cursor-pointer group"
+              className="sm:hidden flex items-center gap-4 p-4 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/8 to-card cursor-pointer active:scale-[0.98] active:opacity-80 transition-all"
+              onClick={() => navigate(`/formation/${lastCourse.id}`)}
+            >
+              <div className="relative flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-secondary">
+                {lastCourse.image_url
+                  ? <img src={lastCourse.image_url} alt="" className="w-full h-full object-cover" />
+                  : <div className="w-full h-full bg-gradient-to-br from-primary/30 to-primary/10" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">En cours</span>
+                <p className="font-bold text-sm text-foreground mt-1 truncate">{lastCourse.title}</p>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <ProgressBar value={(lastCourse.watchedVideos / lastCourse.totalVideos) * 100} size="sm" className="flex-1" />
+                  <span className="text-xs text-muted-foreground flex-shrink-0 tabular-nums">
+                    {Math.round((lastCourse.watchedVideos / lastCourse.totalVideos) * 100)}%
+                  </span>
+                </div>
+              </div>
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+                <Play className="h-4 w-4 text-primary-foreground ml-0.5" fill="currentColor" />
+              </div>
+            </div>
+
+          {/* Desktop: big banner card */}
+            <div
+              className="hidden sm:block relative overflow-hidden rounded-2xl cursor-pointer group"
               onClick={() => navigate(`/formation/${lastCourse.id}`)}
             >
               <div className="absolute inset-0">
@@ -171,9 +192,7 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     {lastCourse.watchedVideos}/{lastCourse.totalVideos} vidéos · {Math.round((lastCourse.watchedVideos / lastCourse.totalVideos) * 100)}% complété
                   </p>
-                  <div className="max-w-sm">
-                    <ProgressBar value={(lastCourse.watchedVideos / lastCourse.totalVideos) * 100} size="sm" />
-                  </div>
+                  <div className="max-w-sm"><ProgressBar value={(lastCourse.watchedVideos / lastCourse.totalVideos) * 100} size="sm" /></div>
                 </div>
                 <div className="flex-shrink-0">
                   <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform">
@@ -182,11 +201,174 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          </section>
+          </motion.section>
         )}
 
-        {/* ── Bannière de don ── */}
-        <section className="rounded-2xl overflow-hidden border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-card relative">
+        {/* ── Formations ── */}
+        <motion.section variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } } }}>
+          <div className="flex items-center justify-between mb-3 sm:mb-6">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Formations</h2>
+            <span className="text-xs text-muted-foreground">{courses.length} disponible{courses.length !== 1 ? "s" : ""}</span>
+          </div>
+
+          {courses.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground border border-dashed border-border rounded-2xl">
+              <Lock className="h-10 w-10 mx-auto mb-3 opacity-30" />
+              <p className="font-medium">Aucune formation disponible pour le moment.</p>
+            </div>
+          ) : (
+            <>
+              {/* MOBILE list */}
+              <div className="sm:hidden space-y-2.5">
+                {courses.map((course) => {
+                  const isLocked = course.totalModules === 0;
+                  const percent = course.totalVideos > 0 ? Math.round((course.watchedVideos / course.totalVideos) * 100) : 0;
+                  const isCompleted = !isLocked && course.watchedVideos > 0 && course.watchedVideos >= course.totalVideos;
+                  const isStarted = !isLocked && course.watchedVideos > 0 && !isCompleted;
+
+                  if (isLocked) {
+                    return (
+                      <div key={course.id} className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-border/50 bg-card opacity-80">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-secondary relative">
+                          {course.image_url
+                            ? <img src={course.image_url} alt="" className="w-full h-full object-cover grayscale" />
+                            : <div className="w-full h-full bg-muted flex items-center justify-center"><Lock className="h-5 w-5 text-muted-foreground/40" /></div>}
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <Lock className="h-4 w-4 text-white" />
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{course.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Bientôt disponible</p>
+                          <button
+                            className="mt-2 text-xs text-primary font-semibold flex items-center gap-1"
+                            onClick={() => { setWaitlistEmail(user?.email || ""); setWaitlistDone(false); setWaitlistDialog(course); }}
+                          >
+                            <Bell className="h-3 w-3" /> M'avertir
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={course.id}
+                      onClick={() => navigate(`/formation/${course.id}`)}
+                      className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-border/60 bg-card cursor-pointer active:scale-[0.98] active:opacity-80 active:bg-muted/30 transition-all"
+                    >
+                      <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-secondary relative">
+                        {course.image_url
+                          ? <img src={course.image_url} alt="" className="w-full h-full object-cover" />
+                          : <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center"><Play className="h-5 w-5 text-primary/40" /></div>}
+                        {isCompleted && (
+                          <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
+                            <CheckCircle2 className="h-5 w-5 text-green-500" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-foreground truncate flex-1">{course.title}</p>
+                          {isCompleted && <span className="text-[10px] font-bold text-green-500 flex-shrink-0">✓ Terminé</span>}
+                          {isStarted && <span className="text-[10px] font-bold text-primary flex-shrink-0">En cours</span>}
+                        </div>
+                        {course.totalVideos > 0 && (
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <ProgressBar value={percent} size="sm" className="flex-1" />
+                            <span className="text-[10px] text-muted-foreground tabular-nums flex-shrink-0">{percent}%</span>
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">{course.totalVideos} vidéo{course.totalVideos !== 1 ? "s" : ""} · {course.totalModules} module{course.totalModules !== 1 ? "s" : ""}</p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 flex-shrink-0" />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* DESKTOP grid */}
+              <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {courses.map((course) => {
+                  const isLocked = course.totalModules === 0;
+                  const percent = course.totalVideos > 0 ? Math.round((course.watchedVideos / course.totalVideos) * 100) : 0;
+                  const isCompleted = !isLocked && course.watchedVideos > 0 && course.watchedVideos >= course.totalVideos;
+                  const isStarted = !isLocked && course.watchedVideos > 0 && !isCompleted;
+
+                  if (isLocked) {
+                    return (
+                      <div key={course.id} className="group rounded-2xl border border-border/50 bg-card overflow-hidden opacity-80">
+                        <div className="relative aspect-video bg-secondary overflow-hidden">
+                          {course.image_url
+                            ? <img src={course.image_url} alt={course.title} className="w-full h-full object-cover grayscale" />
+                            : <div className="w-full h-full bg-gradient-to-br from-muted to-secondary flex items-center justify-center"><Lock className="h-10 w-10 text-muted-foreground/40" /></div>}
+                          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
+                            <div className="w-14 h-14 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center backdrop-blur-sm">
+                              <Lock className="h-6 w-6 text-white" />
+                            </div>
+                            <span className="text-white text-sm font-semibold tracking-wide">Bientôt disponible</span>
+                          </div>
+                        </div>
+                        <div className="p-5">
+                          <h3 className="font-semibold text-foreground mb-1.5 line-clamp-1">{course.title}</h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{course.description}</p>
+                          <Button className="w-full gap-2" size="sm" variant="outline" onClick={() => { setWaitlistEmail(user?.email || ""); setWaitlistDone(false); setWaitlistDialog(course); }}>
+                            <Bell className="h-3.5 w-3.5" />Être averti à la sortie
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={course.id}
+                      onClick={() => navigate(`/formation/${course.id}`)}
+                      className="group rounded-2xl border border-border bg-card overflow-hidden cursor-pointer hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
+                    >
+                      <div className="relative aspect-video bg-secondary overflow-hidden">
+                        {course.image_url
+                          ? <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          : <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center"><Play className="h-10 w-10 text-primary/40" /></div>}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300 shadow-lg">
+                            <Play className="h-5 w-5 text-background ml-0.5" fill="currentColor" />
+                          </div>
+                        </div>
+                        {isCompleted && (
+                          <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
+                            <Trophy className="h-3 w-3" />Terminé
+                          </div>
+                        )}
+                        {isStarted && (
+                          <div className="absolute top-3 right-3 bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-1 rounded-full">En cours</div>
+                        )}
+                      </div>
+                      <div className="p-5">
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors mb-1.5 line-clamp-1">{course.title}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{course.description}</p>
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span>{course.totalVideos} vidéos</span>
+                            <span className="font-medium text-foreground">{percent}%</span>
+                          </div>
+                          <ProgressBar value={percent} size="sm" />
+                        </div>
+                        <Button className="w-full gap-2 group-hover:gap-3 transition-all" size="sm" variant={isCompleted ? "outline" : "default"}>
+                          {isCompleted ? "Revoir" : isStarted ? "Continuer" : "Commencer"}
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </motion.section>
+
+        {/* ── Bannière de don (desktop only in main, mobile via bottom nav) ── */}
+        <section className="hidden sm:block rounded-2xl overflow-hidden border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-card relative">
           <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4" />
           <div className="relative p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6">
             <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center flex-shrink-0">
@@ -195,141 +377,31 @@ const Dashboard = () => {
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-bold text-foreground mb-1">Soutenir Media School Compassion</h3>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
-                Ce contenu est gratuit grâce à des donateurs comme vous. Chaque contribution aide à maintenir et développer les formations disponibles sur cette plateforme.
+                Ce contenu est gratuit grâce à des donateurs comme vous. Chaque contribution aide à maintenir et développer les formations disponibles.
               </p>
             </div>
-            <DonationButton
-              label="Faire un don"
-              className="flex-shrink-0 shadow-lg shadow-primary/20"
-              context="Aidez-nous à maintenir et développer les formations de Media School Compassion."
-            />
+            <DonationButton label="Faire un don" className="flex-shrink-0 shadow-lg shadow-primary/20" context="Aidez-nous à maintenir et développer les formations de Media School Compassion." />
           </div>
         </section>
+      </motion.div>
 
-        {/* ── Formations ── */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Formations</h2>
-            <span className="text-xs text-muted-foreground">{courses.length} disponible{courses.length !== 1 ? "s" : ""}</span>
+      {/* ── Desktop footer ── */}
+      <footer className="hidden sm:block border-t border-border/40 py-8 mt-4">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col items-center sm:items-start gap-0.5">
+            <p className="text-xs text-muted-foreground/60">© Media Compassion Bruxelles</p>
+            <p className="text-xs text-muted-foreground/40">Powered by <span className="font-medium text-muted-foreground/60">Martinez Muzela</span></p>
           </div>
+          <DonationButton variant="ghost" size="sm" label="Soutenir le projet" className="text-muted-foreground hover:text-primary" showIcon={true} />
+        </div>
+      </footer>
 
-          {courses.length === 0 ? (
-            <div className="text-center py-20 text-muted-foreground border border-dashed border-border rounded-2xl">
-              <Lock className="h-10 w-10 mx-auto mb-3 opacity-30" />
-              <p className="font-medium">Aucune formation disponible pour le moment.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {courses.map((course) => {
-                const isLocked = course.totalModules === 0;
-                const percent = course.totalVideos > 0 ? Math.round((course.watchedVideos / course.totalVideos) * 100) : 0;
-                const isCompleted = !isLocked && course.watchedVideos > 0 && course.watchedVideos >= course.totalVideos;
-                const isStarted = !isLocked && course.watchedVideos > 0 && !isCompleted;
-
-                if (isLocked) {
-                  return (
-                    <div
-                      key={course.id}
-                      className="group rounded-2xl border border-border/50 bg-card overflow-hidden opacity-80"
-                    >
-                      <div className="relative aspect-video bg-secondary overflow-hidden">
-                        {course.image_url ? (
-                          <img src={course.image_url} alt={course.title} className="w-full h-full object-cover grayscale" />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-muted to-secondary flex items-center justify-center">
-                            <Lock className="h-10 w-10 text-muted-foreground/40" />
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
-                          <div className="w-14 h-14 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center backdrop-blur-sm">
-                            <Lock className="h-6 w-6 text-white" />
-                          </div>
-                          <span className="text-white text-sm font-semibold tracking-wide">Bientôt disponible</span>
-                        </div>
-                      </div>
-
-                      <div className="p-5">
-                        <h3 className="font-semibold text-foreground mb-1.5 line-clamp-1">{course.title}</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{course.description}</p>
-                        <Button
-                          className="w-full gap-2"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setWaitlistEmail(user?.email || "");
-                            setWaitlistDone(false);
-                            setWaitlistDialog(course);
-                          }}
-                        >
-                          <Bell className="h-3.5 w-3.5" />
-                          Être averti à la sortie
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div
-                    key={course.id}
-                    onClick={() => navigate(`/formation/${course.id}`)}
-                    className="group rounded-2xl border border-border bg-card overflow-hidden cursor-pointer hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
-                  >
-                    <div className="relative aspect-video bg-secondary overflow-hidden">
-                      {course.image_url ? (
-                        <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center">
-                          <Play className="h-10 w-10 text-primary/40" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                        <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300 shadow-lg">
-                          <Play className="h-5 w-5 text-background ml-0.5" fill="currentColor" />
-                        </div>
-                      </div>
-                      {isCompleted && (
-                        <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
-                          <Trophy className="h-3 w-3" />Terminé
-                        </div>
-                      )}
-                      {isStarted && (
-                        <div className="absolute top-3 right-3 bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-1 rounded-full">
-                          En cours
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-5">
-                      <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors mb-1.5 line-clamp-1">{course.title}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{course.description}</p>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{course.totalVideos} vidéos</span>
-                          <span className="font-medium text-foreground">{percent}%</span>
-                        </div>
-                        <ProgressBar value={percent} size="sm" />
-                      </div>
-                      <Button className="w-full gap-2 group-hover:gap-3 transition-all" size="sm" variant={isCompleted ? "outline" : "default"}>
-                        {isCompleted ? "Revoir" : isStarted ? "Continuer" : "Commencer"}
-                        <ChevronRight className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      </div>
-
-      {/* ── Dialog inscription waitlist ── */}
+      {/* ── Waitlist dialog ── */}
       <Dialog open={!!waitlistDialog} onOpenChange={(open) => { if (!open) setWaitlistDialog(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
-              Être averti à la sortie
+              <Bell className="h-5 w-5 text-primary" />Être averti à la sortie
             </DialogTitle>
           </DialogHeader>
           {waitlistDone ? (
@@ -339,68 +411,48 @@ const Dashboard = () => {
               </div>
               <div>
                 <p className="font-semibold text-foreground mb-1">Inscription confirmée !</p>
-                <p className="text-sm text-muted-foreground">
-                  Vous recevrez un email dès que la formation <strong>{waitlistDialog?.title}</strong> sera disponible.
-                </p>
+                <p className="text-sm text-muted-foreground">Vous recevrez un email dès que la formation <strong>{waitlistDialog?.title}</strong> sera disponible.</p>
               </div>
               <Button variant="outline" onClick={() => setWaitlistDialog(null)} className="mt-2">Fermer</Button>
             </div>
           ) : (
             <div className="space-y-4 py-2">
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Souhaitez-vous être averti lors de la sortie des modules de la formation{" "}
-                <strong className="text-foreground">{waitlistDialog?.title}</strong> ?
+                Souhaitez-vous être averti lors de la sortie de la formation <strong className="text-foreground">{waitlistDialog?.title}</strong> ?
               </p>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Votre adresse email</label>
-                <Input
-                  type="email"
-                  placeholder="votre@email.com"
-                  value={waitlistEmail}
-                  onChange={(e) => setWaitlistEmail(e.target.value)}
-                />
+                <Input type="email" placeholder="votre@email.com" value={waitlistEmail} onChange={(e) => setWaitlistEmail(e.target.value)} />
               </div>
-              {waitlistError && (
-                <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-xs text-destructive">
-                  {waitlistError}
-                </div>
-              )}
+              {waitlistError && <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-xs text-destructive">{waitlistError}</div>}
               <div className="flex gap-3 pt-2">
-                <Button variant="outline" className="flex-1" onClick={() => setWaitlistDialog(null)}>
-                  Non merci
-                </Button>
-                <Button
-                  className="flex-1 gap-2"
-                  disabled={!waitlistEmail || waitlistLoading}
-                  onClick={async () => {
-                    if (!waitlistDialog || !waitlistEmail) return;
-                    setWaitlistLoading(true);
-                    setWaitlistError("");
-                    try {
-                      await subscribeToWaitlist(waitlistDialog.id, waitlistEmail);
-                      const res = await fetch("/api/subscribe-waitlist", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: waitlistEmail, courseTitle: waitlistDialog.title }),
-                      });
-                      if (!res.ok) {
-                        const body = await res.json().catch(() => ({}));
-                        setWaitlistError(body.error || `Erreur ${res.status} — vérifiez la configuration RESEND_API_KEY sur Vercel.`);
-                      } else {
-                        setWaitlistDone(true);
-                      }
-                    } catch {
-                      setWaitlistError("Impossible de joindre le serveur. Vérifiez votre connexion.");
-                    } finally {
-                      setWaitlistLoading(false);
+                <Button variant="outline" className="flex-1" onClick={() => setWaitlistDialog(null)}>Non merci</Button>
+                <Button className="flex-1 gap-2" disabled={!waitlistEmail || waitlistLoading} onClick={async () => {
+                  if (!waitlistDialog || !waitlistEmail) return;
+                  setWaitlistLoading(true);
+                  setWaitlistError("");
+                  try {
+                    await subscribeToWaitlist(waitlistDialog.id, waitlistEmail);
+                    const res = await fetch("/api/subscribe-waitlist", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: waitlistEmail, courseTitle: waitlistDialog.title }),
+                    });
+                    if (!res.ok) {
+                      const body = await res.json().catch(() => ({}));
+                      setWaitlistError(body.error || `Erreur ${res.status}`);
+                    } else {
+                      setWaitlistDone(true);
                     }
-                  }}
-                >
-                  {waitlistLoading ? (
-                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Bell className="h-4 w-4" />
-                  )}
+                  } catch {
+                    setWaitlistError("Impossible de joindre le serveur.");
+                  } finally {
+                    setWaitlistLoading(false);
+                  }
+                }}>
+                  {waitlistLoading
+                    ? <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    : <Bell className="h-4 w-4" />}
                   Oui, m'avertir
                 </Button>
               </div>
@@ -409,26 +461,6 @@ const Dashboard = () => {
         </DialogContent>
       </Dialog>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-border/40 py-8 mt-4">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col items-center sm:items-start gap-0.5">
-            <p className="text-xs text-muted-foreground/60">
-              © Media Compassion Bruxelles
-            </p>
-            <p className="text-xs text-muted-foreground/40">
-              Powered by <span className="font-medium text-muted-foreground/60">Martinez Muzela</span>
-            </p>
-          </div>
-          <DonationButton
-            variant="ghost"
-            size="sm"
-            label="Soutenir le projet"
-            className="text-muted-foreground hover:text-primary"
-            showIcon={true}
-          />
-        </div>
-      </footer>
     </div>
   );
 };

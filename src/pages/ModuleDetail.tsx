@@ -124,36 +124,39 @@ const ModuleDetail = () => {
     <div className="min-h-screen bg-background">
 
       {/* ── Sticky header ── */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/60">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="flex-shrink-0 text-muted-foreground" onClick={() => navigate(`/formation/${courseId}`)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+      <div className="sticky top-0 z-50 bg-background/90 backdrop-blur-2xl border-b border-border/40">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 flex items-center gap-2 sm:gap-4">
+          <button
+            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted/50 active:bg-muted active:scale-90 transition-all"
+            onClick={() => navigate(`/formation/${courseId}`)}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-              <span className="font-medium truncate">{moduleTitle}</span>
-              <span className="flex-shrink-0 ml-2">{watched}/{videos.length}</span>
+              <span className="font-semibold text-foreground text-sm truncate">{moduleTitle}</span>
+              <span className="flex-shrink-0 ml-2 tabular-nums">{watched}/{videos.length}</span>
             </div>
             <ProgressBar value={percent} size="sm" />
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-foreground mb-2">{moduleTitle}</h1>
-          <p className="text-muted-foreground leading-relaxed">{moduleDescription}</p>
+      <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-3xl font-extrabold text-foreground mb-1.5">{moduleTitle}</h1>
+          {moduleDescription && <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{moduleDescription}</p>}
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {videos.map((video) => (
             <div
               key={video.id}
-              className="group flex items-center gap-4 p-4 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all cursor-pointer"
+              className="group flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl border border-border bg-card hover:border-primary/40 active:bg-muted/30 active:scale-[0.99] transition-all cursor-pointer"
               onClick={() => navigate(`/formation/${courseId}/module/${moduleId}/video/${video.id}`)}
             >
               {/* Thumbnail */}
-              <div className="relative flex-shrink-0 w-36 aspect-video rounded-xl bg-secondary overflow-hidden">
+              <div className="relative flex-shrink-0 w-24 sm:w-36 aspect-video rounded-xl bg-secondary overflow-hidden">
                 {video.thumbnail
                   ? <img src={video.thumbnail} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   : null}
@@ -193,19 +196,19 @@ const ModuleDetail = () => {
               {/* Check */}
               <button
                 onClick={(e) => { e.stopPropagation(); toggleWatched(video.id, video.completed); }}
-                className="flex-shrink-0 hover:scale-110 transition-transform"
+                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl active:scale-90 transition-all"
               >
                 {video.completed
                   ? <CheckCircle2 className="h-6 w-6 text-primary" />
-                  : <Circle className="h-6 w-6 text-muted-foreground/40 hover:text-primary transition-colors" />}
+                  : <Circle className="h-6 w-6 text-muted-foreground/30 hover:text-primary transition-colors" />}
               </button>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-border/40 py-6 mt-4">
+      {/* ── Footer (desktop only) ── */}
+      <footer className="hidden sm:block border-t border-border/40 py-6 mt-4">
         <div className="flex flex-col items-center gap-0.5">
           <p className="text-xs text-muted-foreground/60">© Media Compassion Bruxelles</p>
           <p className="text-xs text-muted-foreground/40">Powered by <span className="font-medium text-muted-foreground/60">Martinez Muzela</span></p>

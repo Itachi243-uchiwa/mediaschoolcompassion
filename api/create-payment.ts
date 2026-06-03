@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     process.env.APP_URL ||
     (req.headers["x-forwarded-proto"] && req.headers["x-forwarded-host"]
       ? `${req.headers["x-forwarded-proto"]}://${req.headers["x-forwarded-host"]}`
-      : "https://yourapp.vercel.app");
+      : "https://www.mediaschool.cloud/");
 
   const formattedAmount = parsed.toFixed(2);
 

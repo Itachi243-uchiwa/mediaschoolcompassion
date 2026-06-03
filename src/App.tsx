@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import AppShell from "@/components/AppShell";
 import LoginPage from "./pages/LoginPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminPanel from "./pages/AdminPanel";
@@ -30,20 +31,32 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Admin */}
+      {/* Admin — pas de AppShell */}
       <Route path="/admin/login" element={user && isAdmin ? <Navigate to="/admin" replace /> : <AdminLoginPage />} />
       <Route path="/admin/*" element={!user ? <Navigate to="/admin/login" replace /> : !isAdmin ? <Navigate to="/dashboard" replace /> : <AdminPanel />} />
 
       {/* Public login */}
       <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
 
-      {/* Protected pages */}
-      <Route path="/dashboard" element={!user ? <Navigate to="/login" replace /> : <Dashboard />} />
-      <Route path="/formation/:courseId" element={!user ? <Navigate to="/login" replace /> : <CoursePage />} />
-      <Route path="/formation/:courseId/module/:moduleId" element={!user ? <Navigate to="/login" replace /> : <ModuleDetail />} />
-      <Route path="/formation/:courseId/module/:moduleId/video/:videoId" element={!user ? <Navigate to="/login" replace /> : <VideoPlayer />} />
+      {/* Pages protégées — enveloppées dans AppShell */}
+      <Route path="/dashboard" element={
+        !user ? <Navigate to="/login" replace /> :
+        <AppShell><Dashboard /></AppShell>
+      } />
+      <Route path="/formation/:courseId" element={
+        !user ? <Navigate to="/login" replace /> :
+        <AppShell><CoursePage /></AppShell>
+      } />
+      <Route path="/formation/:courseId/module/:moduleId" element={
+        !user ? <Navigate to="/login" replace /> :
+        <AppShell><ModuleDetail /></AppShell>
+      } />
+      <Route path="/formation/:courseId/module/:moduleId/video/:videoId" element={
+        !user ? <Navigate to="/login" replace /> :
+        <AppShell><VideoPlayer /></AppShell>
+      } />
 
-      {/* Donation return pages — public (Mollie redirects here) */}
+      {/* Donation return — public */}
       <Route path="/don/merci" element={<DonationSuccess />} />
       <Route path="/don/annule" element={<DonationCancel />} />
 

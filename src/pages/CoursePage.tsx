@@ -130,17 +130,20 @@ const CoursePage = () => {
     <div className="min-h-screen bg-background">
 
       {/* ── Sticky header ── */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="flex-shrink-0 text-muted-foreground hover:text-foreground" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+      <div className="sticky top-0 z-50 bg-background/90 backdrop-blur-2xl border-b border-border/40">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 flex items-center gap-2 sm:gap-3">
+          <button
+            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted active:scale-90 transition-all"
+            onClick={() => navigate("/dashboard")}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
           <div className="flex-1 min-w-0">
             {totalVideos > 0 ? (
               <>
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                  <span className="font-medium truncate">{courseTitle}</span>
-                  <span className="flex-shrink-0 ml-3 tabular-nums font-medium">{totalWatched}/{totalVideos} · {globalPercent}%</span>
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                  <span className="font-semibold text-foreground truncate text-sm">{courseTitle}</span>
+                  <span className="flex-shrink-0 ml-3 tabular-nums font-medium">{totalWatched}/{totalVideos}</span>
                 </div>
                 <ProgressBar value={globalPercent} size="sm" />
               </>
@@ -198,7 +201,7 @@ const CoursePage = () => {
       </div>
 
       {/* ── Programme header + toggle ── */}
-      <div className="max-w-4xl mx-auto px-4 pt-4 pb-6 flex items-center justify-between">
+      <div className="max-w-4xl mx-auto px-4 pt-4 pb-4 sm:pb-6 flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-foreground">Programme</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -313,7 +316,7 @@ const CoursePage = () => {
 
       {/* ── Vue liste (timeline) ── */}
       {viewMode === "list" && (
-        <div className="max-w-4xl mx-auto px-4 pb-12">
+        <div className="max-w-4xl mx-auto px-4 pb-12 sm:pb-12">
           <div className="relative">
             {/* Timeline connector line */}
             <div className="absolute left-5 top-6 bottom-6 w-px bg-gradient-to-b from-primary/20 via-border/60 to-transparent hidden sm:block" />
@@ -362,7 +365,7 @@ const CoursePage = () => {
 
                       {/* Module button */}
                       <button
-                        className="w-full flex items-center gap-4 px-5 py-4 text-left group"
+                        className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4 text-left group active:bg-muted/20 transition-colors"
                         onClick={() => locked ? openCodeModal(mod.id) : toggleModule(mod.id)}
                       >
                         {/* Mobile dot (hidden on sm+) */}
@@ -432,7 +435,7 @@ const CoursePage = () => {
                               {mod.videos.map((video) => (
                                 <div
                                   key={video.id}
-                                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group"
+                                  className="flex items-center gap-3 px-3 py-3.5 rounded-xl hover:bg-muted/50 active:bg-muted active:scale-[0.99] transition-all cursor-pointer group"
                                   onClick={() => navigate(`/formation/${courseId}/module/${mod.id}/video/${video.id}`)}
                                 >
                                   {/* Thumbnail */}
@@ -574,19 +577,14 @@ const CoursePage = () => {
         </div>
       )}
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-border/40 py-6 mt-4">
+      {/* ── Footer (desktop only) ── */}
+      <footer className="hidden sm:block border-t border-border/40 py-6 mt-4">
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex flex-col items-center sm:items-start gap-0.5">
             <p className="text-xs text-muted-foreground/60">© Media Compassion Bruxelles</p>
             <p className="text-xs text-muted-foreground/40">Powered by <span className="font-medium text-muted-foreground/60">Martinez Muzela</span></p>
           </div>
-          <DonationButton
-            variant="ghost"
-            size="sm"
-            label="Soutenir le projet"
-            className="text-muted-foreground hover:text-primary"
-          />
+          <DonationButton variant="ghost" size="sm" label="Soutenir le projet" className="text-muted-foreground hover:text-primary" />
         </div>
       </footer>
     </div>
