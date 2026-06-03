@@ -18,8 +18,8 @@ const AdminLoginPage = () => {
     setError(null);
     try {
       await signInAdmin(email, password);
-    } catch {
-      setError("Email ou mot de passe incorrect.");
+    } catch (err: any) {
+      setError(`Erreur: ${err?.code ?? "inconnue"} — ${err?.message ?? ""}`);
       setLoading(false);
     }
   };

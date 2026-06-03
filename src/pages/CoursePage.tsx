@@ -267,7 +267,7 @@ const CoursePage = () => {
                           ? <Lock className="h-5 w-5 text-yellow-600" />
                           : modDone
                           ? <CheckCircle2 className="h-5 w-5 text-green-500" />
-                          : <span className="text-sm font-bold text-primary">{i + 1}</span>}
+                          : <span className="text-sm font-bold text-primary">{i}</span>}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className={`font-bold text-sm leading-snug mb-1.5 transition-colors line-clamp-2 ${
@@ -343,7 +343,7 @@ const CoursePage = () => {
                         ? <Lock className="h-4 w-4 text-white" />
                         : modDone
                         ? <CheckCircle2 className="h-4 w-4 text-white" />
-                        : <span className={`text-xs font-bold ${isOpen ? "text-white" : "text-muted-foreground"}`}>{i + 1}</span>}
+                        : <span className={`text-xs font-bold ${isOpen ? "text-white" : "text-muted-foreground"}`}>{i}</span>}
                     </div>
 
                     {/* Card */}
@@ -374,7 +374,7 @@ const CoursePage = () => {
                         }`}>
                           {locked ? <Lock className="h-3.5 w-3.5 text-white" />
                           : modDone ? <CheckCircle2 className="h-3.5 w-3.5 text-white" />
-                          : <span className={`text-xs font-bold ${isOpen ? "text-white" : "text-muted-foreground"}`}>{i + 1}</span>}
+                          : <span className={`text-xs font-bold ${isOpen ? "text-white" : "text-muted-foreground"}`}>{i}</span>}
                         </div>
 
                         <div className="flex-1 min-w-0">
