@@ -4,7 +4,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import InstallPWAButton from "@/components/InstallPWAButton";
 import { Button } from "@/components/ui/button";
 import DonationButton from "@/components/DonationButton";
-import { LogOut, ArrowLeft } from "lucide-react";
+import { LogOut, ArrowLeft, KeyRound } from "lucide-react";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -74,7 +74,16 @@ const AppShell = ({ children }: AppShellProps) => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={async () => { await logout(); navigate("/login"); }}
+              onClick={() => navigate("/compte/mot-de-passe")}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <KeyRound className="h-4 w-4" />
+              <span>Mot de passe</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => { await logout(); navigate("/connexion"); }}
               className="gap-2 text-muted-foreground hover:text-foreground"
             >
               <LogOut className="h-4 w-4" />

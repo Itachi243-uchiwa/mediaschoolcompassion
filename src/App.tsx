@@ -6,6 +6,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppShell from "@/components/AppShell";
 import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ChangePasswordPage from "./pages/ChangePasswordPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminPanel from "./pages/AdminPanel";
 import Dashboard from "./pages/Dashboard";
@@ -35,24 +39,34 @@ const AppRoutes = () => {
       <Route path="/admin/login" element={user && isAdmin ? <Navigate to="/admin" replace /> : <AdminLoginPage />} />
       <Route path="/admin/*" element={!user ? <Navigate to="/admin/login" replace /> : !isAdmin ? <Navigate to="/dashboard" replace /> : <AdminPanel />} />
 
-      {/* Public login */}
-      <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      {/* Authentification — public */}
+      <Route path="/connexion" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+      <Route path="/inscription" element={user ? <Navigate to="/dashboard" replace /> : <SignUpPage />} />
+      <Route path="/mot-de-passe-oublie" element={user ? <Navigate to="/dashboard" replace /> : <ForgotPasswordPage />} />
+      {/* Lien reçu par email — accessible même connecté */}
+      <Route path="/nouveau-mot-de-passe" element={<ResetPasswordPage />} />
+      {/* Ancienne URL conservée pour les liens et PWA en cache */}
+      <Route path="/login" element={<Navigate to="/connexion" replace />} />
 
       {/* Pages protégées — enveloppées dans AppShell */}
       <Route path="/dashboard" element={
-        !user ? <Navigate to="/login" replace /> :
+        !user ? <Navigate to="/connexion" replace /> :
         <AppShell><Dashboard /></AppShell>
       } />
+      <Route path="/compte/mot-de-passe" element={
+        !user ? <Navigate to="/connexion" replace /> :
+        <AppShell><ChangePasswordPage /></AppShell>
+      } />
       <Route path="/formation/:courseId" element={
-        !user ? <Navigate to="/login" replace /> :
+        !user ? <Navigate to="/connexion" replace /> :
         <AppShell><CoursePage /></AppShell>
       } />
       <Route path="/formation/:courseId/module/:moduleId" element={
-        !user ? <Navigate to="/login" replace /> :
+        !user ? <Navigate to="/connexion" replace /> :
         <AppShell><ModuleDetail /></AppShell>
       } />
       <Route path="/formation/:courseId/module/:moduleId/video/:videoId" element={
-        !user ? <Navigate to="/login" replace /> :
+        !user ? <Navigate to="/connexion" replace /> :
         <AppShell><VideoPlayer /></AppShell>
       } />
 
@@ -61,7 +75,7 @@ const AppRoutes = () => {
       <Route path="/don/annule" element={<DonationCancel />} />
 
       {/* Root */}
-      <Route path="/" element={!user ? <Navigate to="/login" replace /> : isAdmin ? <Navigate to="/admin" replace /> : <Navigate to="/dashboard" replace />} />
+      <Route path="/" element={!user ? <Navigate to="/connexion" replace /> : isAdmin ? <Navigate to="/admin" replace /> : <Navigate to="/dashboard" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

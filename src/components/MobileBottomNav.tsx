@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Heart, User, LogOut, Download, X } from "lucide-react";
+import { Home, Heart, User, LogOut, Download, X, KeyRound } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstallPWA } from "@/hooks/useInstallPWA";
 import DonationModal from "@/components/DonationModal";
@@ -107,7 +107,20 @@ const MobileBottomNav = () => {
               )}
 
               <button
-                onClick={async () => { setProfileOpen(false); await logout(); navigate("/login"); }}
+                onClick={() => { setProfileOpen(false); navigate("/compte/mot-de-passe"); }}
+                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-2xl text-left active:bg-muted transition-colors"
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <KeyRound className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Mot de passe</p>
+                  <p className="text-xs text-muted-foreground">Modifier mon mot de passe</p>
+                </div>
+              </button>
+
+              <button
+                onClick={async () => { setProfileOpen(false); await logout(); navigate("/connexion"); }}
                 className="w-full flex items-center gap-3 px-3 py-3.5 rounded-2xl text-left active:bg-muted transition-colors"
               >
                 <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
